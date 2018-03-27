@@ -8,7 +8,11 @@
              Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="800"
+             xmlns:local="clr-namespace:TemplateEditor"
              Name="MyToolWindow">
+    <UserControl.DataContext>
+        <local:EditorToolWindowControlViewModel/>
+    </UserControl.DataContext>
     <UserControl.Resources>
         <Style TargetType="Button">
             <Setter Property="Margin" Value="0,0,3,0"/>
@@ -42,15 +46,18 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Column="0" Text="Path:" Style="{StaticResource LabelTextBlockStyle}"/>
-                <TextBox Grid.Column="1" Text="" HorizontalContentAlignment="Stretch" Margin="2"/>
-                <Button Grid.Column="2" Content="Open"/>
+                <TextBox Grid.Column="1" HorizontalContentAlignment="Stretch" Margin="2,0,2,2"
+                         VerticalContentAlignment="Center" IsReadOnly="True" Text="{Binding TemplatePath}"/>
+                <Button Grid.Column="2" Content="Open" Command="{Binding TemplateOpenCommand}"/>
                 <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
-                    <Button Content="Install"/>
-                    <Button Content="Save"/>
+                    <Button Content="Install" Command="{Binding TemplateInstallCommand}"/>
+                    <Button Content="Save" Command="{Binding TemplateSaveCommand}"/>
+                    <Button Content="Close" Command="{Binding TemplateCloseCommand}"/>
                     <Button Content="Add file"/>
                     <Button Content="Add directory"/>
-                    <Button Content="Remove"/>
-                    <Button Content="Open in VS"/>
+                    <Button Content="Delete" Command="{Binding TemplateDeleteNodeItemCommand}" CommandParameter="{Binding TemplateNodeItemCurrent}"/>
+                    <Button Content="Open item" Command="{Binding TemplateNodeItemOpenCommand}" CommandParameter="{Binding TemplateNodeItemCurrent}"/>
+                    <Button Content="Rename" Command="{Binding TemplateNodeItemRenameBeginCommand}" CommandParameter="{Binding TemplateNodeItemCurrent}"/>
                 </StackPanel>
                 <Grid  Grid.Row="2" Grid.ColumnSpan="3">
                     <Grid.ColumnDefinitions>
@@ -59,11 +66,30 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
 
-                    <TreeView Grid.Column="0">
-                        <TreeViewItem Header="Root" IsExpanded="True">
-                            <TreeViewItem Header="File 1"/>
-                            <TreeViewItem Header="File 2"/>
-                        </TreeViewItem>
+                    <TreeView x:Name="tv" Grid.Column="0" ItemsSource="{Binding TemplateNodeItemList}" 
+                              local:ReadOnlyPropertyBinding.ReadOnlyProperty="{Binding ElementName=tv, Path=SelectedValue}" 
+                              local:ReadOnlyPropertyBinding.ModelProperty="{Binding TemplateNodeItemCurrent}"
+                              >
+                        <TreeView.InputBindings>
+                            <KeyBinding Key="F2"  Command="{Binding TemplateNodeItemRenameBeginCommand}" CommandParameter="{Binding TemplateNodeItemCurrent}"/>
+                        </TreeView.InputBindings>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="local:NodeItem">
+                                <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal" Visibility="{Binding IsRenameing, Converter={local:BoolToInvertVisibilityConverter}}">
+                                        <TextBlock Text="{Binding Name}"/>
+                                        <TextBlock Text="*" Visibility="{Binding IsModifed, Converter={local:BoolToVisibilityConverter}}"/>
+                                    </StackPanel>
+                                    <TextBox Text="{Binding NewName}" Visibility="{Binding IsRenameing, Converter={local:BoolToVisibilityConverter}}" LostFocus="TextBox_LostFocus">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Enter" Command="{Binding ElementName=tv, Path=DataContext.TemplateNodeItemRenameEndCommand}" CommandParameter="{Binding}"/>
+                                            <KeyBinding Key="Esc" Command="{Binding ElementName=tv, Path=DataContext.TemplateNodeItemRenameCancelCommand}" CommandParameter="{Binding}"/>
+                                        </TextBox.InputBindings>
+                                    </TextBox>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+
                     </TreeView>
                     <GridSplitter Grid.Column="1" Width="3" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
                     <Grid Grid.Column="2">
@@ -71,10 +97,11 @@
                             <RowDefinition/>
                             <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
-                        <TextBox Grid.Row="0" AcceptsReturn="True" AcceptsTab="True" Margin="0,3"/>
+                        <TextBox Grid.Row="0" AcceptsReturn="True" AcceptsTab="True" Margin="0,3" Text="{Binding TemplateNodeItemCurrent.FileContent, UpdateSourceTrigger=PropertyChanged}" 
+                                 HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" />
                         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="Save"/>
-                            <Button Content="Discard"/>
+                            <Button Content="Save" Command="{Binding TemplatePreviewSaveCommand}" CommandParameter="{Binding TemplateNodeItemCurrent}"/>
+                            <Button Content="Discard" Command="{Binding TemplatePreviewDiscardCommand}" CommandParameter="{Binding TemplateNodeItemCurrent}"/>
                         </StackPanel>
                     </Grid>
                 </Grid>

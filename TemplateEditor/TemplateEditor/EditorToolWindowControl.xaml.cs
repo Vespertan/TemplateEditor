@@ -30,5 +30,15 @@
                 string.Format(System.Globalization.CultureInfo.CurrentUICulture, "Invoked '{0}'", this.ToString()),
                 "EditorToolWindow");
         }
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var nodeItem = ((sender as TextBox).DataContext as NodeItem);
+            if (nodeItem.NewName == nodeItem.Name)
+            {
+                nodeItem.IsRenameing = false;
+                nodeItem.NewName = null;
+            }
+        }
     }
 }
