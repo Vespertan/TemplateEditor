@@ -55,6 +55,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Data\CommitValueCommand.cs" />
+    <Compile Include="Data\NameValue.cs" />
     <Compile Include="Data\TextBoxEx.cs" />
     <Compile Include="Data\BoolToInvertVisibilityConverter.cs" />
     <Compile Include="Data\BoolToVisibilityConverter.cs" />

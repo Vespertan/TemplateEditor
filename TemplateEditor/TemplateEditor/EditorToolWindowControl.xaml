@@ -125,12 +125,12 @@
                 <!-- Input parameters-->
                 <TextBlock Grid.Column="0" Grid.Row="0" Text="Input parameters" Style="{StaticResource LabelTextBlockStyle}"/>
                 <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Horizontal">
-                    <Button Content="Refresh"/>
+                    <Button Content="Refresh" Command="{Binding InputParameterListRefreshCommand}" />
                 </StackPanel>
-                <DataGrid Grid.Column="0" Grid.Row="2">
+                <DataGrid Grid.Column="0" Grid.Row="2" ItemsSource="{Binding InputParameterList}" AutoGenerateColumns="False" IsReadOnly="True">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name"/>
-                        <DataGridTextColumn Header="Value"/>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+                        <DataGridTextColumn Header="Value" Binding="{Binding Value}"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <!-- Splitter-->
@@ -139,13 +139,13 @@
                 <!-- Custom parameters-->
                 <TextBlock Grid.Column="2" Grid.Row="0" Text="Custom parameters" Style="{StaticResource LabelTextBlockStyle}"/>
                 <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Horizontal">
-                    <Button Content="Add"/>
-                    <Button Content="Remove"/>
+                    <!--<Button Content="Remove" />-->
+                    <Button Content="Refresh" Command="{Binding CustomParameterListRefreshCommand}"/>
                 </StackPanel>
-                <DataGrid Grid.Column="2" Grid.Row="2">
+                <DataGrid Grid.Column="2" Grid.Row="2" ItemsSource="{Binding CustomParameterList}" AutoGenerateColumns="False" RowHeaderWidth="20">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name"/>
-                        <DataGridTextColumn Header="Value"/>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+                        <DataGridTextColumn Header="Value" Binding="{Binding Value}"/>
                     </DataGrid.Columns>
                 </DataGrid>
                 <!-- Splitter-->

@@ -12,6 +12,8 @@ using System.Windows;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.Shell;
+using System.Xml;
+using System.Collections.Specialized;
 
 namespace TemplateEditor
 {
@@ -35,6 +37,12 @@ namespace TemplateEditor
 
         private NodeItem _templateNodeItemRoot;
         public NodeItem TemplateNodeItemRoot { get { return _templateNodeItemRoot; } set { SetProperty(ref _templateNodeItemRoot, value); } }
+
+        private ObservableCollection<NameValue> _inputParametersList;
+        public ObservableCollection<NameValue> InputParameterList { get { return _inputParametersList; } set { SetProperty(ref _inputParametersList, value); } }
+
+        private ObservableCollection<NameValue> _customParametersList;
+        public ObservableCollection<NameValue> CustomParameterList { get { return _customParametersList; } set { SetProperty(ref _customParametersList, value); } }
 
 
         #endregion
@@ -503,6 +511,153 @@ namespace TemplateEditor
         private bool CanTemplatePreviewDiscard(NodeItem nodeItem)
         {
             return nodeItem?.IsModifed == true;
+        }
+
+        #endregion
+
+
+        #region InputParameterListRefreshCommand
+
+        private VesDelegateCommand _inputParameterListCommand;
+        public VesDelegateCommand InputParameterListRefreshCommand => _inputParameterListCommand ?? (_inputParameterListCommand = new VesDelegateCommand(InputParameterListRefresh, CanInputParameterListRefresh));
+
+        private void InputParameterListRefresh()
+        {
+            var lst = new ObservableCollection<NameValue>();
+            lst.Add(new NameValue { Name = "clrversion" });
+            lst.Add(new NameValue { Name = "itemname" });
+            lst.Add(new NameValue { Name = "machinename" });
+            lst.Add(new NameValue { Name = "projectname" });
+            lst.Add(new NameValue { Name = "registeredorganization" });
+            lst.Add(new NameValue { Name = "rootnamespace" });
+            lst.Add(new NameValue { Name = "safeitemname" });
+            lst.Add(new NameValue { Name = "safeprojectname" });
+            lst.Add(new NameValue { Name = "time" });
+            lst.Add(new NameValue { Name = "SpecificSolutionName" });
+            lst.Add(new NameValue { Name = "userdomain" });
+            lst.Add(new NameValue { Name = "username" });
+            lst.Add(new NameValue { Name = "webnamespace" });
+            lst.Add(new NameValue { Name = "year" });
+            lst.Add(new NameValue { Name = "guid1" });
+            lst.Add(new NameValue { Name = "guid2" });
+            lst.Add(new NameValue { Name = "guid3" });
+            lst.Add(new NameValue { Name = "guid4" });
+            lst.Add(new NameValue { Name = "guid5" });
+            lst.Add(new NameValue { Name = "guid6" });
+            lst.Add(new NameValue { Name = "guid7" });
+            lst.Add(new NameValue { Name = "guid8" });
+            lst.Add(new NameValue { Name = "guid9" });
+            lst.Add(new NameValue { Name = "guid10" });
+            InputParameterList = lst;
+        }
+
+        private bool CanInputParameterListRefresh()
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region CustomParameterListRefreshCommand
+
+        private VesDelegateCommand _customParameterListRefreshCommand;
+        public VesDelegateCommand CustomParameterListRefreshCommand => _customParameterListRefreshCommand ?? (_customParameterListRefreshCommand = new VesDelegateCommand(CustomParameterListRefresh, CanCustomParameterListRefresh));
+
+        private void CustomParameterListRefresh()
+        {
+            var item = TemplateNodeItemRoot?.GetAllChildren().FirstOrDefault(p => p.Name.EndsWith(".vstemplate"));
+            if (item == null)
+            {
+                return;
+            }
+
+            var xmlDocument = new XmlDocument();
+            xmlDocument.LoadXml(item.FileContent);
+            var nsm = new XmlNamespaceManager(xmlDocument.NameTable);
+            nsm.AddNamespace("x", "http://schemas.microsoft.com/developer/vstemplate/2005");
+            var lst = new ObservableCollection<NameValue>();
+            foreach (XmlNode xmlNode in xmlDocument.SelectNodes("//x:CustomParameters/x:CustomParameter", nsm))
+            {
+                var nameValue = new NameValue
+                {
+                    Name = xmlNode.SelectSingleNode("@Name", nsm).Value,
+                    Value = xmlNode.SelectSingleNode("@Value", nsm).Value
+                };
+                nameValue.PropertyChanged += NameValue_PropertyChanged;
+                lst.Add(nameValue);
+            }
+
+            CustomParameterList = lst;
+            CustomParameterList.CollectionChanged += CustomParameterList_CollectionChanged;
+        }
+
+        private void NameValue_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            UpdateCustomParameters();
+        }
+
+        private void CustomParameterList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                (e.NewItems[0] as NameValue).PropertyChanged += NameValue_PropertyChanged;
+                //UpdateCustomParameters();
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                UpdateCustomParameters();
+            }
+        }
+
+        private void UpdateCustomParameters()
+        {
+            var item = TemplateNodeItemRoot?.GetAllChildren().FirstOrDefault(p => p.Name.EndsWith(".vstemplate"));
+            if (item == null)
+            {
+                return;
+            }
+
+            var xmlDocument = new XmlDocument();
+            xmlDocument.PreserveWhitespace = true;
+            
+            xmlDocument.LoadXml(item.FileContent);
+            var nsm = new XmlNamespaceManager(xmlDocument.NameTable);
+            nsm.AddNamespace("x", "http://schemas.microsoft.com/developer/vstemplate/2005");
+            var lst = new ObservableCollection<NameValue>();
+
+
+            var cpList = xmlDocument.SelectNodes("//x:CustomParameters", nsm);
+            XmlNode cpsNode;
+            if (cpList.Count == 1)
+            {
+                cpsNode = cpList[0];
+            }
+            else
+            {
+                cpsNode = xmlDocument.SelectSingleNode("//x:TemplateContent", nsm).AppendChild(xmlDocument.CreateNode(XmlNodeType.Element, "CustomParameters", string.Empty));
+            }
+
+            cpsNode.RemoveAll();
+            foreach (var cp in CustomParameterList)
+            {
+                var na = xmlDocument.CreateAttribute("Name");
+                na.Value = cp.Name;
+                var va = xmlDocument.CreateAttribute("Value");
+                va.Value = cp.Value;
+                cpsNode.AppendChild(xmlDocument.CreateWhitespace("\n      "));
+                var cpNode = cpsNode.AppendChild(xmlDocument.CreateNode(XmlNodeType.Element, "CustomParameter", "http://schemas.microsoft.com/developer/vstemplate/2005"));
+                cpNode.Attributes.Append(na);
+                cpNode.Attributes.Append(va);
+            }
+            cpsNode.AppendChild(xmlDocument.CreateWhitespace("\n    "));
+
+
+            item.FileContent = xmlDocument.InnerXml;
+        }
+
+        private bool CanCustomParameterListRefresh()
+        {
+            return true;
         }
 
         #endregion
