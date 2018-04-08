@@ -1,4 +1,4 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.Shell;
 using System.Xml;
 using System.Collections.Specialized;
+using System.Reflection;
 
 namespace TemplateEditor
 {
@@ -21,7 +22,7 @@ namespace TemplateEditor
     {
         private FileSystemWatcher _watcher;
 
-        #region Properties+
+        #region Properties
 
         private string _templatePath;
         public string TemplatePath { get { return _templatePath; } set { SetProperty(ref _templatePath, value); } }
@@ -43,6 +44,18 @@ namespace TemplateEditor
 
         private ObservableCollection<NameValue> _customParametersList;
         public ObservableCollection<NameValue> CustomParameterList { get { return _customParametersList; } set { SetProperty(ref _customParametersList, value); } }
+
+        private ObservableCollection<NodeItem> _solutionNodeItemList;
+        public ObservableCollection<NodeItem> SolutionNodeItemList { get { return _solutionNodeItemList; } set { SetProperty(ref _solutionNodeItemList, value); } }
+
+        private NodeItem _solutionNodeItemCurrent;
+        public NodeItem SolutionNodeItemCurrent { get { return _solutionNodeItemCurrent; } set { SetProperty(ref _solutionNodeItemCurrent, value); } }
+
+        private NodeItem _solutionNodeItemRoot;
+        public NodeItem SolutionNodeItemRoot { get { return _solutionNodeItemRoot; } set { SetProperty(ref _solutionNodeItemRoot, value); } }
+
+        private ObservableCollection<NameValue> _evaluatedParameterList;
+        public ObservableCollection<NameValue> EvaluatedParameterList { get { return _evaluatedParameterList; } set { SetProperty(ref _evaluatedParameterList, value); } }
 
 
         #endregion
@@ -74,7 +87,15 @@ namespace TemplateEditor
                 nodes.Add(new NodeItem { Name = Path.GetFileName(TemplatePath), FullName = TemplateTempDir, IsDir = true });
                 foreach (var f in files)
                 {
-                    nodes[0].Children.Add(new NodeItem { Name = Path.GetFileName(f), ParentFullName = Path.GetDirectoryName(f), FullName = f, IsDir = Directory.Exists(f) });
+                    var n = new NodeItem
+                    {
+                        Name = Path.GetFileName(f),
+                        ParentFullName = Path.GetDirectoryName(f),
+                        FullName = f,
+                        IsDir = Directory.Exists(f)
+                    };
+                    n.PropertyChanged += NodeItem_PropertyChanged;
+                    nodes[0].Children.Add(n);
                 }
 
                 TemplateNodeItemList = nodes;
@@ -449,8 +470,7 @@ namespace TemplateEditor
                 }
 
                 param.IsModifed = false;
-                param.PropertyChanged -= NodeItem_PropertyChanged;
-                param.PropertyChanged += NodeItem_PropertyChanged;
+
             }
         }
 
@@ -619,7 +639,7 @@ namespace TemplateEditor
 
             var xmlDocument = new XmlDocument();
             xmlDocument.PreserveWhitespace = true;
-            
+
             xmlDocument.LoadXml(item.FileContent);
             var nsm = new XmlNamespaceManager(xmlDocument.NameTable);
             nsm.AddNamespace("x", "http://schemas.microsoft.com/developer/vstemplate/2005");
@@ -662,20 +682,56 @@ namespace TemplateEditor
 
         #endregion
 
-        #endregion
+        #region TemplateGeneratePreviewCommand
 
-        protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private VesDelegateCommand _templateGaneratePreviewCommand;
+        public VesDelegateCommand TemplateGeneratePreviewCommand => _templateGaneratePreviewCommand ?? (_templateGaneratePreviewCommand = new VesDelegateCommand(TemplateGeneratePreview, CanTemplateGeneratePreview));
+
+        private void TemplateGeneratePreview()
         {
-            base.OnPropertyChanged(propertyName);
-
-            if (propertyName == nameof(TemplateNodeItemCurrent))
+            var dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE));
+            if (dte.SelectedItems.Count == 0)
             {
-                if (TemplateNodeItemCurrent != null && TemplateNodeItemCurrent.FileContent == null)
+                return;
+            }
+            EnvDTE80.Solution2 solution2 = (EnvDTE80.Solution2)dte.Solution;
+            var projectItemTemplate = solution2.GetProjectItemTemplate("KalView", "CSharp");
+
+            try
+            {
+                dte.SelectedItems.Item(1).ProjectItem.ProjectItems.AddFromTemplate(projectItemTemplate, "Kiszka.cs");
+                var assembly = Assembly.Load("Vespertan.CustomParametersWizard, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ad2b617f2d3eb0d1");
+                var wizard = assembly.GetType("Vespertan.CustomParametersWizard.CustomParametersWizard");
+                //var wizard = Type.GetType("Vespertan.CustomParametersWizard.CustomParametersWizard, Vespertan.CustomParametersWizard, Version=1.0.0.0, PublicKeyToken=ad2b617f2d3eb0d1");
+                var lastInputProperty = wizard.GetProperty("LastInputReplacemntDictionary");
+                var lastEvaluatedProperty = wizard.GetProperty("LastEvaluatedReplacemntDictionary");
+                var lst = new ObservableCollection<NameValue>();
+                var eList = (Dictionary<string, string>)lastEvaluatedProperty.GetValue(null);
+                if (eList == null)
                 {
-                    TemplatePreviewFileCommand.ExecuteIfCan(TemplateNodeItemCurrent);
+                    MessageBox.Show("ListEmpty");
+                    return;
                 }
+                foreach (var item in eList)
+                {
+                    lst.Add(new NameValue { Name = item.Key, Value = item.Value });
+                }
+                EvaluatedParameterList = lst;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
+
+        private bool CanTemplateGeneratePreview()
+        {
+            return true;
+        }
+
+        #endregion
+
+        #endregion
 
         public NodeItem GetParentNodeItem(NodeItem nodeItem)
         {

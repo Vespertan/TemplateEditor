@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,7 +21,11 @@ namespace TemplateEditor
         public string ParentFullName { get { return _parentFullName; } set { SetProperty(ref _parentFullName, value); } }
 
         private string _fileContent;
-        public string FileContent { get { return _fileContent; } set { SetProperty(ref _fileContent, value); } }
+        public string FileContent
+        {
+            get { return _fileContent ?? (_fileContent = GetFileContent()); }
+            set { SetProperty(ref _fileContent, value); }
+        }
 
         private ObservableCollection<NodeItem> _children = new ObservableCollection<NodeItem>();
         public ObservableCollection<NodeItem> Children { get { return _children; } set { SetProperty(ref _children, value); } }
@@ -42,7 +47,7 @@ namespace TemplateEditor
         {
             var lst = new List<NodeItem>();
             var stack = new Stack<NodeItem>();
-            
+
             stack.Push(this);
 
             while (stack.Count > 0)
@@ -59,6 +64,20 @@ namespace TemplateEditor
             }
 
             return lst;
+        }
+
+        public string GetFileContent()
+        {
+            if (!IsDir)
+            {
+                using (var fs = new FileStream(FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var sr = new StreamReader(fs))
+                {
+                    return sr.ReadToEnd();
+                }
+            }
+
+            return null;
         }
     }
 }

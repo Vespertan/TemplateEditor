@@ -58,6 +58,7 @@
                     <Button Content="Delete" Command="{Binding TemplateDeleteNodeItemCommand}" CommandParameter="{Binding TemplateNodeItemCurrent}"/>
                     <Button Content="Open item" Command="{Binding TemplateNodeItemOpenCommand}" CommandParameter="{Binding TemplateNodeItemCurrent}"/>
                     <Button Content="Rename" Command="{Binding TemplateNodeItemRenameBeginCommand}" CommandParameter="{Binding TemplateNodeItemCurrent}"/>
+                    <Button Content="Run" Command="{Binding TemplateGeneratePreviewCommand}" />
                 </StackPanel>
                 <Grid  Grid.Row="2" Grid.ColumnSpan="3">
                     <Grid.ColumnDefinitions>
@@ -142,7 +143,7 @@
                     <!--<Button Content="Remove" />-->
                     <Button Content="Refresh" Command="{Binding CustomParameterListRefreshCommand}"/>
                 </StackPanel>
-                <DataGrid Grid.Column="2" Grid.Row="2" ItemsSource="{Binding CustomParameterList}" AutoGenerateColumns="False" RowHeaderWidth="20">
+                <DataGrid Grid.Column="2" Grid.Row="2" ItemsSource="{Binding CustomParameterList}" AutoGenerateColumns="False" >
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
                         <DataGridTextColumn Header="Value" Binding="{Binding Value}"/>
@@ -155,45 +156,12 @@
                 <StackPanel Grid.Column="4" Grid.Row="1" Orientation="Horizontal">
                     <Button Content="Refresh"/>
                 </StackPanel>
-                <DataGrid Grid.Column="4" Grid.Row="2">
+                <DataGrid Grid.Column="4" Grid.Row="2" AutoGenerateColumns="False" ItemsSource="{Binding EvaluatedParameterList}" IsReadOnly="True">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name"/>
-                        <DataGridTextColumn Header="Value"/>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
+                        <DataGridTextColumn Header="Value" Binding="{Binding Value}"/>
                     </DataGrid.Columns>
                 </DataGrid>
-            </Grid>
-        </TabItem>
-        <TabItem Header="Preview">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Horizontal">
-                    <Button Content="Generate"/>
-                    <Button Content="Open in VS"/>
-                </StackPanel>
-                <Grid Grid.Column="0" Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="auto"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <TreeView Grid.Column="0" >
-                        <TreeViewItem Header="Generated root" IsExpanded="True">
-                            <TreeViewItem Header="Generated File 1"/>
-                            <TreeViewItem Header="Generated File 2"/>
-                        </TreeViewItem>
-                    </TreeView>
-                    <GridSplitter Grid.Column="1" Width="3" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
-                    <Grid Grid.Column="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto"/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <TextBox Grid.Row="1" AcceptsReturn="True" AcceptsTab="True"/>
-                    </Grid>
-                </Grid>
             </Grid>
         </TabItem>
     </TabControl>
