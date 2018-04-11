@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TemplateEditor
+namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
     public class NameValue : VesBindableBase
     {

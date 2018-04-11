@@ -8,7 +8,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 
-namespace TemplateEditor
+namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
     public class CommitValueCommand : ICommand
     {

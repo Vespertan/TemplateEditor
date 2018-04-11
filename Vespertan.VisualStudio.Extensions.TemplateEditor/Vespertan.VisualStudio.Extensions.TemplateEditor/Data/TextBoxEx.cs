@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 
-namespace TemplateEditor
+namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
     public static class TextBoxEx
     {

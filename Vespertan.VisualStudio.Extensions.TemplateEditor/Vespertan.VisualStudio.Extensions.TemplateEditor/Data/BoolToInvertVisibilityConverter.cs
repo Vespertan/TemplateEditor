@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace TemplateEditor
+namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
     public class BoolToInvertVisibilityConverter : MarkupExtension, IValueConverter
     {

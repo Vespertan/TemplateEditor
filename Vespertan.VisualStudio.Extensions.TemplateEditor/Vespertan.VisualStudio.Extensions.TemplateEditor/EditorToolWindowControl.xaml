@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="TemplateEditor.EditorToolWindowControl"
+﻿<UserControl x:Class="Vespertan.VisualStudio.Extensions.TemplateEditor.EditorToolWindowControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,7 +8,7 @@
              Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="800"
-             xmlns:local="clr-namespace:TemplateEditor"
+             xmlns:local="clr-namespace:Vespertan.VisualStudio.Extensions.TemplateEditor"
              Name="MyToolWindow">
     <UserControl.DataContext>
         <local:EditorToolWindowControlViewModel/>

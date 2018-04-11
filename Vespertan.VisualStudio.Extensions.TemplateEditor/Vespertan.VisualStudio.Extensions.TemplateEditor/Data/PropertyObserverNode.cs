@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace TemplateEditor
+namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
     /// <summary>
     /// Represents each node of nested properties expression and takes care of 

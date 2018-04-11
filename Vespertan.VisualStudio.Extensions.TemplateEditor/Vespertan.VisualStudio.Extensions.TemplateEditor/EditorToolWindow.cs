@@ -1,4 +1,4 @@
-﻿namespace TemplateEditor
+﻿namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
     using System;
     using System.Runtime.InteropServices;

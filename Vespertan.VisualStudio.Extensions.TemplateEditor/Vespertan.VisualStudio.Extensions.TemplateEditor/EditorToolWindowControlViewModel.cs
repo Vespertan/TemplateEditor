@@ -16,7 +16,8 @@ using System.Xml;
 using System.Collections.Specialized;
 using System.Reflection;
 
-namespace TemplateEditor
+
+namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
     public class EditorToolWindowControlViewModel : VesBindableBase
     {
@@ -700,13 +701,9 @@ namespace TemplateEditor
             try
             {
                 dte.SelectedItems.Item(1).ProjectItem.ProjectItems.AddFromTemplate(projectItemTemplate, "Kiszka.cs");
-                var assembly = Assembly.Load("Vespertan.CustomParametersWizard, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ad2b617f2d3eb0d1");
-                var wizard = assembly.GetType("Vespertan.CustomParametersWizard.CustomParametersWizard");
-                //var wizard = Type.GetType("Vespertan.CustomParametersWizard.CustomParametersWizard, Vespertan.CustomParametersWizard, Version=1.0.0.0, PublicKeyToken=ad2b617f2d3eb0d1");
-                var lastInputProperty = wizard.GetProperty("LastInputReplacemntDictionary");
-                var lastEvaluatedProperty = wizard.GetProperty("LastEvaluatedReplacemntDictionary");
+                
                 var lst = new ObservableCollection<NameValue>();
-                var eList = (Dictionary<string, string>)lastEvaluatedProperty.GetValue(null);
+                var eList = WizardInfoWrapper.EvaluatedReplacementDictionary;
                 if (eList == null)
                 {
                     MessageBox.Show("ListEmpty");
