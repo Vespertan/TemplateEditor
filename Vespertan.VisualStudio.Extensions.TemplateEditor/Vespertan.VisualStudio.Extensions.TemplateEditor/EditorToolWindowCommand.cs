@@ -69,12 +69,15 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
             }
         }
 
+        public static IServiceProvider ServiceProvider2 { get; set; }
+
         /// <summary>
         /// Initializes the singleton instance of the command.
         /// </summary>
         /// <param name="package">Owner package, not null.</param>
         public static void Initialize(Package package)
         {
+            ServiceProvider2 = package;
             Instance = new EditorToolWindowCommand(package);
         }
 

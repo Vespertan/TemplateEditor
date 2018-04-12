@@ -15,7 +15,8 @@ using Microsoft.VisualStudio.Shell;
 using System.Xml;
 using System.Collections.Specialized;
 using System.Reflection;
-
+using Microsoft.VisualStudio.Settings;
+using Microsoft.VisualStudio.Shell.Settings;
 
 namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
@@ -58,7 +59,13 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         private ObservableCollection<NameValue> _evaluatedParameterList;
         public ObservableCollection<NameValue> EvaluatedParameterList { get { return _evaluatedParameterList; } set { SetProperty(ref _evaluatedParameterList, value); } }
 
+        private EnvDTE.DTE _dte;
+        private EnvDTE.DTE DTE => _dte ?? (_dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE)));
+        
+        public string ProjectItemTemplatesLocation => (string)DTE.Properties["Environment", "ProjectsAndSolution"].Item("ProjectItemTemplatesLocation").Value;
 
+        public string ProjectTemplatesLocation => (string)DTE.Properties["Environment", "ProjectsAndSolution"].Item("ProjectTemplatesLocation").Value;
+       
         #endregion
 
         #region Commands+
@@ -110,6 +117,8 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
                 _watcher.Renamed += Watcher_Changed;
                 _watcher.Created += Watcher_Changed;
                 _watcher.EnableRaisingEvents = true;
+
+                InputParameterListRefreshCommand.ExecuteIfCan();
             }
         }
 
@@ -199,12 +208,12 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
                 }
             }
 
+            _watcher.EnableRaisingEvents = false;
             Directory.Delete(TemplateTempDir, true);
             TemplateTempDir = null;
             TemplatePath = null;
             TemplateNodeItemList = null;
             TemplateNodeItemRoot = null;
-            _watcher.EnableRaisingEvents = false;
         }
 
         private bool CanTemplateClose()
@@ -337,8 +346,7 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
             }
             else
             {
-                var dte = (EnvDTE.DTE)ServiceProvider.GlobalProvider.GetService(typeof(EnvDTE.DTE));
-                dte.ExecuteCommand("File.OpenFile", param.FullName);
+                DTE.ExecuteCommand("File.OpenFile", param.FullName);
             }
         }
 
@@ -545,30 +553,34 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         private void InputParameterListRefresh()
         {
             var lst = new ObservableCollection<NameValue>();
-            lst.Add(new NameValue { Name = "clrversion" });
-            lst.Add(new NameValue { Name = "itemname" });
-            lst.Add(new NameValue { Name = "machinename" });
-            lst.Add(new NameValue { Name = "projectname" });
-            lst.Add(new NameValue { Name = "registeredorganization" });
-            lst.Add(new NameValue { Name = "rootnamespace" });
-            lst.Add(new NameValue { Name = "safeitemname" });
-            lst.Add(new NameValue { Name = "safeprojectname" });
-            lst.Add(new NameValue { Name = "time" });
-            lst.Add(new NameValue { Name = "SpecificSolutionName" });
-            lst.Add(new NameValue { Name = "userdomain" });
-            lst.Add(new NameValue { Name = "username" });
-            lst.Add(new NameValue { Name = "webnamespace" });
-            lst.Add(new NameValue { Name = "year" });
-            lst.Add(new NameValue { Name = "guid1" });
-            lst.Add(new NameValue { Name = "guid2" });
-            lst.Add(new NameValue { Name = "guid3" });
-            lst.Add(new NameValue { Name = "guid4" });
-            lst.Add(new NameValue { Name = "guid5" });
-            lst.Add(new NameValue { Name = "guid6" });
-            lst.Add(new NameValue { Name = "guid7" });
-            lst.Add(new NameValue { Name = "guid8" });
-            lst.Add(new NameValue { Name = "guid9" });
-            lst.Add(new NameValue { Name = "guid10" });
+            lst.Add(new NameValue { Name = "$clrversion$" });
+            lst.Add(new NameValue { Name = "$itemname$" });
+            lst.Add(new NameValue { Name = "$machinename$" });
+            lst.Add(new NameValue { Name = "$projectname$" });
+            lst.Add(new NameValue { Name = "$registeredorganization$" });
+            lst.Add(new NameValue { Name = "$rootnamespace$" });
+            lst.Add(new NameValue { Name = "$safeitemname$" });
+            lst.Add(new NameValue { Name = "$safeprojectname$" });
+            lst.Add(new NameValue { Name = "$time$" });
+            lst.Add(new NameValue { Name = "$SpecificSolutionName$" });
+            lst.Add(new NameValue { Name = "$userdomain$" });
+            lst.Add(new NameValue { Name = "$username$" });
+            lst.Add(new NameValue { Name = "$webnamespace$" });
+            lst.Add(new NameValue { Name = "$year$" });
+            lst.Add(new NameValue { Name = "$runsilent$" });
+            lst.Add(new NameValue { Name = "$solutiondirectory$" });
+            lst.Add(new NameValue { Name = "$rootname$" });
+            lst.Add(new NameValue { Name = "$targetframeworkversion$" });
+            lst.Add(new NameValue { Name = "$guid1$" });
+            lst.Add(new NameValue { Name = "$guid2$" });
+            lst.Add(new NameValue { Name = "$guid3$" });
+            lst.Add(new NameValue { Name = "$guid4$" });
+            lst.Add(new NameValue { Name = "$guid5$" });
+            lst.Add(new NameValue { Name = "$guid6$" });
+            lst.Add(new NameValue { Name = "$guid7$" });
+            lst.Add(new NameValue { Name = "$guid8$" });
+            lst.Add(new NameValue { Name = "$guid9$" });
+            lst.Add(new NameValue { Name = "$guid10$" });
             InputParameterList = lst;
         }
 
@@ -690,28 +702,31 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 
         private void TemplateGeneratePreview()
         {
-            var dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE));
-            if (dte.SelectedItems.Count == 0)
+            if (DTE.SelectedItems.Count == 0)
             {
                 return;
             }
-            EnvDTE80.Solution2 solution2 = (EnvDTE80.Solution2)dte.Solution;
+            EnvDTE80.Solution2 solution2 = (EnvDTE80.Solution2)DTE.Solution;
             var projectItemTemplate = solution2.GetProjectItemTemplate("KalView", "CSharp");
 
             try
             {
-                dte.SelectedItems.Item(1).ProjectItem.ProjectItems.AddFromTemplate(projectItemTemplate, "Kiszka.cs");
-                
+                DTE.SelectedItems.Item(1).ProjectItem.ProjectItems.AddFromTemplate(projectItemTemplate, "Kiszka.cs");
+
                 var lst = new ObservableCollection<NameValue>();
-                var eList = WizardInfoWrapper.EvaluatedReplacementDictionary;
-                if (eList == null)
-                {
-                    MessageBox.Show("ListEmpty");
-                    return;
-                }
+                var eList = WizardInfoWrapper.EvaluatedReplacementDictionary ?? new Dictionary<string, string>();
+                InputParameterListRefreshCommand.ExecuteIfCan();
                 foreach (var item in eList)
                 {
-                    lst.Add(new NameValue { Name = item.Key, Value = item.Value });
+                    var inputParameter = InputParameterList.FirstOrDefault(p => p.Name == item.Key);
+                    if (inputParameter == null)
+                    {
+                        lst.Add(new NameValue { Name = item.Key, Value = item.Value });
+                    }
+                    else
+                    {
+                        inputParameter.Value = item.Value;
+                    }
                 }
                 EvaluatedParameterList = lst;
             }
@@ -722,6 +737,23 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         }
 
         private bool CanTemplateGeneratePreview()
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region TestCommand
+
+        private VesDelegateCommand _testCommand;
+        public VesDelegateCommand TestCommand => _testCommand ?? (_testCommand = new VesDelegateCommand(Test, CanTest));
+
+        private void Test()
+        {
+
+        }
+
+        private bool CanTest()
         {
             return true;
         }
