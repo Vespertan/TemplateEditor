@@ -55,8 +55,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ConfirmWindow.xaml.cs">
+      <DependentUpon>ConfirmWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Data\XElementToXPathConverter.cs" />
     <Compile Include="Data\CommitValueCommand.cs" />
     <Compile Include="Data\NameValue.cs" />
+    <Compile Include="Data\NodeItemToStringContentConverter.cs" />
+    <Compile Include="Data\NodeItemToBitmapImageConverter.cs" />
+    <Compile Include="Data\NodeItemToVisibilityConverter.cs" />
+    <Compile Include="Data\StringToVisibilityConverter.cs" />
     <Compile Include="Data\TextBoxEx.cs" />
     <Compile Include="Data\BoolToInvertVisibilityConverter.cs" />
     <Compile Include="Data\BoolToVisibilityConverter.cs" />
@@ -70,21 +78,34 @@
     </Compile>
     <Compile Include="EditorToolWindowControlViewModel.cs" />
     <Compile Include="EditorToolWindowPackage.cs" />
+    <Compile Include="NameEditView.xaml.cs">
+      <DependentUpon>NameEditView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Data\PropertyObserver.cs" />
     <Compile Include="Data\PropertyObserverNode.cs" />
     <Compile Include="Data\VesDelegateCommand.cs" />
     <Compile Include="Data\VesDelegateCommandBase.cs" />
     <Compile Include="Data\VesDelegateCommand{T}.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="VSTemplateView.xaml.cs">
+      <DependentUpon>VSTemplateView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WizardInfoWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Key.snk" />
     <None Include="packages.config" />
+    <None Include="Resources\template.zip" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
+    <None Include="template.zip" />
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="EditorToolWindowPackage.vsct">
@@ -96,7 +117,19 @@
     <Content Include="stylesheet.css" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="ConfirmWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="EditorToolWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="NameEditView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="VSTemplateView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -193,13 +226,20 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="VSPackage.resx">
       <MergeWithCTO>true</MergeWithCTO>
       <ManifestResourceName>VSPackage</ManifestResourceName>

@@ -17,11 +17,19 @@ using System.Collections.Specialized;
 using System.Reflection;
 using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell.Settings;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
     public class EditorToolWindowControlViewModel : VesBindableBase
     {
+        public EditorToolWindowControlViewModel()
+        {
+            _dispatcher = Dispatcher.CurrentDispatcher;
+        }
+
+        private Dispatcher _dispatcher;
         private FileSystemWatcher _watcher;
 
         #region Properties
@@ -47,25 +55,22 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         private ObservableCollection<NameValue> _customParametersList;
         public ObservableCollection<NameValue> CustomParameterList { get { return _customParametersList; } set { SetProperty(ref _customParametersList, value); } }
 
-        private ObservableCollection<NodeItem> _solutionNodeItemList;
-        public ObservableCollection<NodeItem> SolutionNodeItemList { get { return _solutionNodeItemList; } set { SetProperty(ref _solutionNodeItemList, value); } }
-
-        private NodeItem _solutionNodeItemCurrent;
-        public NodeItem SolutionNodeItemCurrent { get { return _solutionNodeItemCurrent; } set { SetProperty(ref _solutionNodeItemCurrent, value); } }
-
-        private NodeItem _solutionNodeItemRoot;
-        public NodeItem SolutionNodeItemRoot { get { return _solutionNodeItemRoot; } set { SetProperty(ref _solutionNodeItemRoot, value); } }
-
         private ObservableCollection<NameValue> _evaluatedParameterList;
         public ObservableCollection<NameValue> EvaluatedParameterList { get { return _evaluatedParameterList; } set { SetProperty(ref _evaluatedParameterList, value); } }
 
+        private ObservableCollection<string> _previewTypeList = new ObservableCollection<string> { "Text", "Image", "VSTemplate" };
+        public ObservableCollection<string> PreviewTypeList { get { return _previewTypeList; } set { SetProperty(ref _previewTypeList, value); } }
+
+        private string _previewType;
+        public string PreviewType { get { return _previewType; } set { SetProperty(ref _previewType, value); } }
+
         private EnvDTE.DTE _dte;
         private EnvDTE.DTE DTE => _dte ?? (_dte = (EnvDTE.DTE)Package.GetGlobalService(typeof(Microsoft.VisualStudio.Shell.Interop.SDTE)));
-        
+
         public string ProjectItemTemplatesLocation => (string)DTE.Properties["Environment", "ProjectsAndSolution"].Item("ProjectItemTemplatesLocation").Value;
 
         public string ProjectTemplatesLocation => (string)DTE.Properties["Environment", "ProjectsAndSolution"].Item("ProjectTemplatesLocation").Value;
-       
+
         #endregion
 
         #region Commands+
@@ -82,43 +87,75 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
             {
                 return;
             }
+            TemplateOpen(@"C:\Users\mg\Documents\Visual Studio 2017\Templates\ItemTemplates\KalView.zip");
+            return;
             var ofd = new OpenFileDialog();
             ofd.Filter = "zip files|*.zip";
             if (ofd.ShowDialog() == true)
             {
-                TemplatePath = ofd.FileName;
-                TemplateTempDir = Directory.CreateDirectory($"{Path.GetTempPath()}\\{Path.GetRandomFileName()}").FullName;
-                ZipFile.ExtractToDirectory(TemplatePath, TemplateTempDir);
-                var files = Directory.GetFiles(TemplateTempDir, "*", SearchOption.AllDirectories);
+                TemplateOpen(ofd.FileName);
+            }
+        }
 
-                var nodes = new ObservableCollection<NodeItem>();
-                nodes.Add(new NodeItem { Name = Path.GetFileName(TemplatePath), FullName = TemplateTempDir, IsDir = true });
-                foreach (var f in files)
+        private void TemplateOpen(string fileName)
+        {
+            TemplatePath = fileName;
+            TemplateTempDir = Directory.CreateDirectory($"{Path.GetTempPath()}\\{Path.GetRandomFileName()}").FullName;
+            ZipFile.ExtractToDirectory(TemplatePath, TemplateTempDir);
+            var files = Directory.GetFiles(TemplateTempDir, "*", SearchOption.AllDirectories);
+
+            var nodes = new ObservableCollection<NodeItem>();
+            nodes.Add(new NodeItem { Name = Path.GetFileName(TemplatePath), FullName = TemplateTempDir, IsDir = true });
+            foreach (var f in files)
+            {
+                var n = new NodeItem
                 {
-                    var n = new NodeItem
-                    {
-                        Name = Path.GetFileName(f),
-                        ParentFullName = Path.GetDirectoryName(f),
-                        FullName = f,
-                        IsDir = Directory.Exists(f)
-                    };
-                    n.PropertyChanged += NodeItem_PropertyChanged;
-                    nodes[0].Children.Add(n);
+                    Name = Path.GetFileName(f),
+                    ParentFullName = Path.GetDirectoryName(f),
+                    FullName = f,
+                    IsDir = Directory.Exists(f)
+                };
+
+                if (!n.IsDir)
+                {
+                    n.PreviewType = GetPreviewType(n.FullName);
                 }
+                n.PropertyChanged += NodeItem_PropertyChanged;
+                nodes[0].Children.Add(n);
+            }
 
-                TemplateNodeItemList = nodes;
-                TemplateNodeItemRoot = nodes[0];
+            TemplateNodeItemList = nodes;
+            TemplateNodeItemRoot = nodes[0];
 
-                _watcher = new FileSystemWatcher();
-                _watcher.Path = TemplateTempDir;
-                _watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-                _watcher.Changed += Watcher_Changed;
-                _watcher.Deleted += Watcher_Changed;
-                _watcher.Renamed += Watcher_Changed;
-                _watcher.Created += Watcher_Changed;
-                _watcher.EnableRaisingEvents = true;
+            _watcher = new FileSystemWatcher();
+            _watcher.Path = TemplateTempDir;
+            _watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            _watcher.Changed += Watcher_Changed;
+            _watcher.Deleted += Watcher_Changed;
+            _watcher.Renamed += Watcher_Changed;
+            _watcher.Created += Watcher_Changed;
+            _watcher.IncludeSubdirectories = true;
+            _watcher.EnableRaisingEvents = true;
+            InputParameterListRefreshCommand.ExecuteIfCan();
+        }
 
-                InputParameterListRefreshCommand.ExecuteIfCan();
+        private static string GetPreviewType(string path)
+        {
+            var imageExtensions = new string[]{
+                        ".ABC",".ANI",".CAL",".CLP",".CMP",".CMW",".CUR",".DIC",".EMF",".EPS",".EXIF",".FLC",".GIF",".HDP",".ICA",".ICO",".IFF",".IMG",".ITG",".JB2",
+                        ".JPEG",".JP2",".JPG",".MAC",".MNG",".MRC",".MSP",".PBM",".PCX",".PNG",".PSD",".RAS",".SGI",".SMP",".TGA",".TIFF",".WMF",".WPG",".XPM",".XPS",".XWD"};
+            var extension = Path.GetExtension(path);
+            if (extension.Equals(".vstemplate", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return "VSTemplate";
+            }
+            else if (imageExtensions.Any(p => p.Equals(extension, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                return "Image";
+            }
+            else
+            {
+                return "Text";
             }
         }
 
@@ -132,11 +169,11 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
             else if (e.ChangeType == WatcherChangeTypes.Deleted)
             {
                 var nodeItem = TemplateNodeItemRoot.GetAllChildren().FirstOrDefault(p => p.FullName == e.FullPath);
-                TemplateNodeItemDeleteCommand.ExecuteIfCan(nodeItem);
+                _dispatcher.Invoke(() => TemplateNodeItemDeleteCommand.ExecuteIfCan(nodeItem));
             }
             else if (e.ChangeType == WatcherChangeTypes.Created)
             {
-
+                _dispatcher.Invoke(() => TemplateNodeItemAddCommand.ExecuteIfCan(e.FullPath));
             }
             else if (e.ChangeType == WatcherChangeTypes.Renamed)
             {
@@ -332,6 +369,55 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 
         #endregion
 
+        #region TemplateNodeItemAddCommand
+
+        private VesDelegateCommand<string> _templateNodeItemAddCommand;
+        public VesDelegateCommand<string> TemplateNodeItemAddCommand => _templateNodeItemAddCommand ?? (_templateNodeItemAddCommand = new VesDelegateCommand<string>(TemplateNodeItemAdd, CanTemplateNodeItemAdd));
+
+        private void TemplateNodeItemAdd(string param)
+        {
+            var parentDir = Path.GetDirectoryName(param);
+            var isDir = Directory.Exists(param);
+
+            if (isDir)
+            {
+                if (!Directory.Exists(param))
+                {
+                    _watcher.EnableRaisingEvents = false;
+                    Directory.CreateDirectory(param);
+                    _watcher.EnableRaisingEvents = true;
+                }
+            }
+            else
+            {
+                if (!File.Exists(param))
+                {
+                    _watcher.EnableRaisingEvents = false;
+                    File.WriteAllText(param, string.Empty);
+                    _watcher.EnableRaisingEvents = true;
+                }
+            }
+
+            var parentNode = TemplateNodeItemRoot.FullName == parentDir ? TemplateNodeItemRoot : TemplateNodeItemRoot.GetAllChildren().Where(p => p.FullName == parentDir).Single();
+            parentNode.Children.Add(new NodeItem
+            {
+                IsDir = isDir,
+                FullName = param,
+                Name = Path.GetFileName(param),
+                ParentFullName = parentNode.FullName,
+                PreviewType = isDir ? string.Empty : GetPreviewType(param)
+            });
+        }
+
+
+        private bool CanTemplateNodeItemAdd(string param)
+        {
+            return param != null;
+        }
+
+        #endregion
+
+
         #region TemplateNodeItemOpenCommand
 
         private VesDelegateCommand<NodeItem> _templateNodeItemOpenCommand;
@@ -400,7 +486,7 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         private void TemplateNodeItemRename(NodeItem nodeItem, string newName, bool changeFile)
         {
             var parent = GetParentNodeItem(nodeItem);
-
+            newName = Path.GetFileName(newName);
             if (parent.Children.Any(p => p.Name == newName))
             {
                 MessageBox.Show($"File with name '{newName}' already exists");
@@ -544,6 +630,54 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 
         #endregion
 
+        #region TemplateCreateCommand
+
+        private VesDelegateCommand _templateCreateCommand;
+        public VesDelegateCommand TemplateCreateCommand => _templateCreateCommand ?? (_templateCreateCommand = new VesDelegateCommand(TemplateCreate, CanTemplateCreate));
+
+        private void TemplateCreate()
+        {
+            if (TemplateNodeItemRoot?.IsModifed == true)
+            {
+                var result = MessageBox.Show($"Save template '{TemplateNodeItemRoot.Name}' changes?", "Save template", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+                else if (result == MessageBoxResult.Yes)
+                {
+                    TemplateSaveCommand.ExecuteIfCan();
+                }
+                TemplateCloseCommand.ExecuteIfCan();
+            }
+
+            var sfd = new SaveFileDialog();
+            sfd.Filter = "Zip files (*.zip)|*.zip";
+            if (sfd.ShowDialog() != true)
+            {
+                return;
+            }
+
+
+            try
+            {
+                File.WriteAllBytes(sfd.FileName, Properties.Resources.template);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return;
+            }
+
+            TemplateOpen(sfd.FileName);
+        }
+
+        private bool CanTemplateCreate()
+        {
+            return true;
+        }
+
+        #endregion
 
         #region InputParameterListRefreshCommand
 

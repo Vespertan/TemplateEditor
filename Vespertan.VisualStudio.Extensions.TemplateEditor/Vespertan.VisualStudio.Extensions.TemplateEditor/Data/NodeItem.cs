@@ -6,6 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
@@ -23,8 +26,29 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         private string _fileContent;
         public string FileContent
         {
-            get { return _fileContent ?? (_fileContent = GetFileContent()); }
+            get { return _fileContent ?? (PreviewType == "Text" || PreviewType == "VSTemplate" ? (_fileContent = GetFileContent()) : null); }
             set { SetProperty(ref _fileContent, value); }
+        }
+
+        private IEnumerable<XElement> _xDocument;
+        public IEnumerable<XElement> XDocument
+        {
+            get
+            {
+                if (_xDocument == null && PreviewType == "VSTemplate")
+                {
+                    var xDocument = System.Xml.Linq.XDocument.Parse(FileContent);
+                    xDocument.Changed += XDocument_Changed;
+                    _xDocument = xDocument.Elements();
+                }
+                return _xDocument;
+            }
+            set { SetProperty(ref _xDocument, value); }
+        }
+
+        private void XDocument_Changed(object sender, XObjectChangeEventArgs e)
+        {
+            
         }
 
         private ObservableCollection<NodeItem> _children = new ObservableCollection<NodeItem>();
@@ -42,6 +66,8 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         private string _newName;
         public string NewName { get { return _newName; } set { SetProperty(ref _newName, value); } }
 
+        private string _previewType;
+        public string PreviewType { get { return _previewType; } set { SetProperty(ref _previewType, value); } }
 
         public List<NodeItem> GetAllChildren()
         {
