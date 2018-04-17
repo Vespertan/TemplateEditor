@@ -35,8 +35,12 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         {
             get
             {
-                if (_xDocument == null && PreviewType == "VSTemplate")
+                if (PreviewType == "VSTemplate")
                 {
+                    if (_xDocument != null)
+                    {
+                        _xDocument.First().Document.Changed -= XDocument_Changed;
+                    }
                     var xDocument = System.Xml.Linq.XDocument.Parse(FileContent);
                     xDocument.Changed += XDocument_Changed;
                     _xDocument = xDocument.Elements();
@@ -48,7 +52,7 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 
         private void XDocument_Changed(object sender, XObjectChangeEventArgs e)
         {
-            
+            FileContent = _xDocument.First().Document.ToString(SaveOptions.None);
         }
 
         private ObservableCollection<NodeItem> _children = new ObservableCollection<NodeItem>();
@@ -104,6 +108,18 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
             }
 
             return null;
+        }
+
+        protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            base.OnPropertyChanged(propertyName);
+            if (propertyName == nameof(PreviewType))
+            {
+                if (PreviewType == "VSTemplate")
+                {
+                    OnPropertyChanged(nameof(XDocument));
+                }
+            }
         }
     }
 }

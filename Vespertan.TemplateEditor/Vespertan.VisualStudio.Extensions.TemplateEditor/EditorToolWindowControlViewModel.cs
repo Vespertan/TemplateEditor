@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Settings;
 using Microsoft.VisualStudio.Shell.Settings;
 using System.Threading;
 using System.Windows.Threading;
+using System.Xml.Linq;
 
 namespace Vespertan.VisualStudio.Extensions.TemplateEditor
 {
@@ -70,6 +71,10 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         public string ProjectItemTemplatesLocation => (string)DTE.Properties["Environment", "ProjectsAndSolution"].Item("ProjectItemTemplatesLocation").Value;
 
         public string ProjectTemplatesLocation => (string)DTE.Properties["Environment", "ProjectsAndSolution"].Item("ProjectTemplatesLocation").Value;
+
+        private XElement _xElementCurrent;
+        public XElement XElementCurrent { get { return _xElementCurrent; } set { SetProperty(ref _xElementCurrent, value); } }
+
 
         #endregion
 
@@ -888,6 +893,51 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
         }
 
         private bool CanTest()
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region XElementCurrentAddCommand
+
+        private VesDelegateCommand<string> _xElementCurrentAddCommand;
+        public VesDelegateCommand<string> XElementCurrentAddCommand => _xElementCurrentAddCommand ?? (_xElementCurrentAddCommand = new VesDelegateCommand<string>(XElementCurrentAdd, CanXElementCurrentAdd))
+            .ObservesProperty(() => XElementCurrent);
+
+        private void XElementCurrentAdd(string param)
+        {
+            if (XElementCurrent == null)
+            {
+                return;
+            }
+
+            XElementCurrent.Add(new XElement(param));
+        }
+
+        private bool CanXElementCurrentAdd(string param)
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region XElementCurrentRemoveCommand
+
+        private VesDelegateCommand<string> _xElementCurrentRemoveCommand;
+        public VesDelegateCommand<string> XElementCurrentRemoveCommand => _xElementCurrentRemoveCommand ?? (_xElementCurrentRemoveCommand = new VesDelegateCommand<string>(XElementCurrentRemove, CanXElementCurrentRemove));
+
+        private void XElementCurrentRemove(string param)
+        {
+            if (XElementCurrent == null)
+            {
+                return;
+            }
+
+            XElementCurrent.Element(param)?.Remove();
+        }
+
+        private bool CanXElementCurrentRemove(string param)
         {
             return true;
         }
