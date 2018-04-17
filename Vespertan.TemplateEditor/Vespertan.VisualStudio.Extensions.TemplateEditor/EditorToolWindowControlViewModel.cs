@@ -87,7 +87,7 @@ namespace Vespertan.VisualStudio.Extensions.TemplateEditor
             {
                 return;
             }
-            TemplateOpen(@"C:\Users\mg\Documents\Visual Studio 2017\Templates\ItemTemplates\KalView.zip");
+            TemplateOpen(ProjectItemTemplatesLocation + @"\KalView.zip");
             return;
             var ofd = new OpenFileDialog();
             ofd.Filter = "zip files|*.zip";
