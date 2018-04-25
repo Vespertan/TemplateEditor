@@ -251,6 +251,8 @@ namespace Vespertan.TemplateEditor
             }
 
             _watcher.EnableRaisingEvents = false;
+            TemplateNodeItemRoot.GetAllChildren().ForEach(p => p.PropertyChanged -= NodeItem_PropertyChanged);
+            TemplateNodeItemRoot.PropertyChanged -= NodeItem_PropertyChanged;
             Directory.Delete(TemplateTempDir, true);
             TemplateTempDir = null;
             TemplatePath = null;
@@ -916,6 +918,32 @@ namespace Vespertan.TemplateEditor
         }
 
         private bool CanXElementCurrentAdd(string param)
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region XElementCurrentAddUniqueCommand
+
+        private VesDelegateCommand<string> _xElementCurrentAddUniqueCommand;
+        public VesDelegateCommand<string> XElementCurrentAddUniqueCommand => _xElementCurrentAddUniqueCommand ?? (_xElementCurrentAddUniqueCommand = new VesDelegateCommand<string>(XElementCurrentAddUnique, CanXElementCurrentAddUnique))
+            .ObservesProperty(() => XElementCurrent);
+
+        private void XElementCurrentAddUnique(string param)
+        {
+            if (XElementCurrent == null)
+            {
+                return;
+            }
+            if (XElementCurrent.Element(param) == null)
+            {
+                XElementCurrent.Add(new XElement(param));
+                
+            }
+        }
+
+        private bool CanXElementCurrentAddUnique(string param)
         {
             return true;
         }

@@ -1,9 +1,8 @@
-﻿<UserControl x:Class="Vespertan.TemplateEditor.VSTemplateView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:local="clr-namespace:Vespertan.TemplateEditor" xmlns:sys="clr-namespace:System;assembly=mscorlib"
-        mc:Ignorable="d" d:DataContext="{d:DesignInstance Type=local:EditorToolWindowControlViewModel}" d:DesignHeight="450"
-        d:DesignWidth="800">
+﻿<UserControl x:Class="Vespertan.TemplateEditor.VSTemplateView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:local="clr-namespace:Vespertan.TemplateEditor"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib" mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=local:EditorToolWindowControlViewModel}" d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
@@ -13,6 +12,11 @@
         <TreeView x:Name="vstv" Grid.Column="0" ItemsSource="{Binding TemplateNodeItemCurrent.XDocument}"
                 local:ReadOnlyPropertyBinding.ReadOnlyProperty="{Binding ElementName=vstv, Path=SelectedValue}"
                 local:ReadOnlyPropertyBinding.ModelProperty="{Binding XElementCurrent}">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="True" />
+                </Style>
+            </TreeView.ItemContainerStyle>
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}VSTemplate"
                         ItemsSource="{Binding Converter={local:XElementToXPathConverter}, ConverterParameter='default:TemplateData|default:TemplateContent|default:WizardExtension|default:WizardData'}">
@@ -86,97 +90,511 @@
                         <TextBlock Text="{Binding Name.LocalName}" />
                     </StackPanel>
                 </HierarchicalDataTemplate>
+                <HierarchicalDataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}WizardData"
+                        ItemsSource="{x:Null}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Name.LocalName}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
             </TreeView.Resources>
         </TreeView>
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
-        <Grid Grid.Column="2">
-            <ContentControl Content="{Binding ElementName=vstv, Path=SelectedItem}">
-                <ContentControl.Resources>
-                    <Style TargetType="TextBlock" x:Key="LabelTextBlock">
-                        <Setter Property="Margin" Value="2,4" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                    </Style>
-                    <Style TargetType="TextBox" x:Key="StdTextBox">
-                        <Setter Property="Height" Value="21" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                        <Setter Property="VerticalContentAlignment" Value="Center" />
-                        <Setter Property="HorizontalAlignment" Value="Left" />
-                        <Setter Property="Width" Value="200" />
-                    </Style>
-                    <Style TargetType="ComboBox" x:Key="StdComboBox">
-                        <Setter Property="Height" Value="21" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                        <Setter Property="HorizontalAlignment" Value="Left" />
-                        <Setter Property="Width" Value="200" />
-                    </Style>
-                    <DataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}VSTemplate">
-                        <Grid DataContext="{Binding}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource LabelTextBlock}" Text="Version:" />
-                            <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource StdTextBox}"
-                                    Text="{Binding Attribute[Version].Value}" />
-                            <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource LabelTextBlock}" Text="Type:" />
-                            <ComboBox Grid.Row="1" Grid.Column="1" IsEditable="True" Style="{StaticResource StdComboBox}"
-                                    Text="{Binding Attribute[Type].Value}">
-                                <sys:String>ProjectItem</sys:String>
-                                <sys:String>Item</sys:String>
-                                <sys:String>ProjectGroup</sys:String>
-                            </ComboBox>
-                        </Grid>
-                    </DataTemplate>
-                    <DataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}TemplateData">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto" />
-                                <ColumnDefinition Width="auto" />
-                                <ColumnDefinition Width="auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                                <RowDefinition Height="auto" />
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Column="0" Grid.Row="0" Text="Name:" Style="{StaticResource LabelTextBlock}" />
-                            <TextBox Grid.Column="1" Grid.Row="0" Style="{StaticResource StdTextBox}"
-                                    Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Name].Value}" />
-                            <StackPanel Grid.Column="2" Grid.Row="0">
-                                <Button Content="Add" Command="{Binding ElementName=vstv, Path=DataContext.XElementCurrentAddCommand}" 
-                                        CommandParameter="{}{http://schemas.microsoft.com/developer/vstemplate/2005}Name" />
-                                <Button Content="Remove" Command="{Binding ElementName=vstv, Path=DataContext.XElementCurrentRemoveCommand}"
-                                        CommandParameter="{}{http://schemas.microsoft.com/developer/vstemplate/2005}Name" />
-                            </StackPanel>
+        <ScrollViewer Grid.Column="2">
+            <Grid>
+                <ContentControl Content="{Binding ElementName=vstv, Path=SelectedItem}">
+                    <ContentControl.Resources>
+                        <Style TargetType="TextBlock" x:Key="LabelTextBlock">
+                            <Setter Property="Margin" Value="2,4" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                        <Style TargetType="TextBox" x:Key="StdTextBox">
+                            <Setter Property="Height" Value="21" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="Width" Value="200" />
+                        </Style>
+                        <Style TargetType="ComboBox" x:Key="StdComboBox">
+                            <Setter Property="Height" Value="21" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                            <Setter Property="HorizontalAlignment" Value="Left" />
+                            <Setter Property="Width" Value="200" />
+                            <Setter Property="IsEditable" Value="True" />
+                        </Style>
+                        <Style TargetType="CheckBox" x:Key="StdCheckBox">
+                            <Setter Property="IsThreeState" Value="True" />
+                            <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                        <!--VSTemplate-->
+                        <DataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}VSTemplate">
+                            <Grid DataContext="{Binding}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+                                <!--Version-->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Style="{StaticResource LabelTextBlock}" Text="Version:"
+                                        ToolTip="Identifies the template as a project template or an item template. This attribute can have a value of Project or Item." />
+                                <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource StdTextBox}"
+                                        Text="{Binding Attribute[Version].Value}" />
+                                <!--Type-->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Style="{StaticResource LabelTextBlock}" Text="Type:"
+                                        ToolTip="Specifies a version number for the template. Templates in Visual Studio 2010 and Visual Studio 2012 have a Version attribute value of 3.0.0." />
+                                <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource StdComboBox}"
+                                        Text="{Binding Attribute[Type].Value}">
+                                    <sys:String>ProjectItem</sys:String>
+                                    <sys:String>Item</sys:String>
+                                    <sys:String>ProjectGroup</sys:String>
+                                </ComboBox>
+                            </Grid>
+                        </DataTemplate>
+                        <!--TemplateData-->
+                        <DataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}TemplateData">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition Height="auto" />
+                                </Grid.RowDefinitions>
 
-                        </Grid>
-                    </DataTemplate>
-                    <DataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}ProjectItem">
-                        <TextBox Background="Blue" Text="{Binding Mode=OneWay}" />
-                    </DataTemplate>
-                </ContentControl.Resources>
+                                <!--Name-->
+                                <TextBlock Text="Name:" Grid.Column="0" Grid.Row="0" Style="{StaticResource LabelTextBlock}"
+                                        FontWeight="Bold"
+                                        ToolTip="Required element.&#xA;Specifies the name of the template as it appears in either the 'New Project' or the 'Add New Item' dialog box." />
+                                <TextBox Grid.Column="1" Grid.Row="0" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExists="{}{http://schemas.microsoft.com/developer/vstemplate/2005}Name"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Name].Value}" />
+                                <!--Name:ID-->
+                                <TextBlock Grid.Column="0" Grid.Row="1" Text="Name->ID:" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional attribute, for advanced user scenarios.&#xA;Specifies the Visual Studio resource ID." />
+                                <TextBox Grid.Column="1" Grid.Row="1" Style="{StaticResource StdTextBox}"
+                                        DataContext="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Name]}"
+                                        local:TextChangedAction.AddXAttributeIfNotExistsRemoveEmpty="ID"
+                                        Text="{Binding Attribute[ID].Value}" />
+                                <!--Name:Package-->
+                                <TextBlock Text="Name->Package:" Grid.Column="0" Grid.Row="2" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional attribute, for advanced user scenarios.&#xA;A GUID that specifies the Visual Studio package ID." />
+                                <TextBox Grid.Column="1" Grid.Row="2" Style="{StaticResource StdTextBox}"
+                                        DataContext="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Name]}"
+                                        local:TextChangedAction.AddXAttributeIfNotExistsRemoveEmpty="Package"
+                                        Text="{Binding Attribute[Package].Value}" />
 
-            </ContentControl>
-        </Grid>
+                                <!--Description-->
+                                <TextBlock Text="Description:" Grid.Column="0" Grid.Row="3" Style="{StaticResource LabelTextBlock}"
+                                        FontWeight="Bold"
+                                        ToolTip="Required element.&#xA;Specifies the description of the template as it appears in either the 'New Project' or the 'Add New Item' dialog box." />
+                                <TextBox Grid.Column="1" Grid.Row="3" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExists="{}{http://schemas.microsoft.com/developer/vstemplate/2005}Description"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Description].Value}" />
+                                <!--Description:ID-->
+                                <TextBlock Text="Description->ID:" Grid.Column="0" Grid.Row="4" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional attribute, for advanced user scenarios.&#xA;Specifies the Visual Studio resource ID." />
+                                <TextBox Grid.Column="1" Grid.Row="4" Style="{StaticResource StdTextBox}"
+                                        DataContext="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Description]}"
+                                        local:TextChangedAction.AddXAttributeIfNotExistsRemoveEmpty="ID"
+                                        Text="{Binding Attribute[ID].Value}" />
+                                <!--Description:Package-->
+                                <TextBlock Grid.Column="0" Grid.Row="5" Text="Description->Package:" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional attribute, for advanced user scenarios.&#xA;A GUID that specifies the Visual Studio package ID." />
+                                <TextBox Grid.Column="1" Grid.Row="5" Style="{StaticResource StdTextBox}"
+                                        DataContext="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Description]}"
+                                        local:TextChangedAction.AddXAttributeIfNotExistsRemoveEmpty="Package"
+                                        Text="{Binding Attribute[Package].Value}" />
+
+                                <!--Icon-->
+                                <TextBlock Text="Icon:" Grid.Column="0" Grid.Row="6" Style="{StaticResource LabelTextBlock}"
+                                        FontWeight="Bold"
+                                        ToolTip="Required element.&#xA;Specifies the path and the filename of the image file that serves as the icon, which appears in either the 'New Project' or the 'Add New Item' dialog box." />
+                                <TextBox Grid.Column="1" Grid.Row="6" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExists="{}{http://schemas.microsoft.com/developer/vstemplate/2005}Icon"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Icon].Value}" />
+                                <!--Icon:ID-->
+                                <TextBlock Text="Icon->ID:" Grid.Column="0" Grid.Row="7" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional attribute, for advanced user scenarios.&#xA;Specifies the Visual Studio resource ID." />
+                                <TextBox Grid.Column="1" Grid.Row="7" Style="{StaticResource StdTextBox}"
+                                        DataContext="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Icon]}"
+                                        local:TextChangedAction.AddXAttributeIfNotExistsRemoveEmpty="ID"
+                                        Text="{Binding Attribute[ID].Value}" />
+                                <!--Icon:Package-->
+                                <TextBlock Grid.Column="0" Grid.Row="8" Text="Icon->Package:" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional attribute, for advanced user scenarios.&#xA;A GUID that specifies the Visual Studio package ID." />
+                                <TextBox Grid.Column="1" Grid.Row="8" Style="{StaticResource StdTextBox}"
+                                        DataContext="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Icon]}"
+                                        local:TextChangedAction.AddXAttributeIfNotExistsRemoveEmpty="Package"
+                                        Text="{Binding Attribute[Package].Value}" />
+
+                                <!--PreviewImage-->
+                                <TextBlock Text="PreviewImage:" Grid.Column="0" Grid.Row="9" Style="{StaticResource LabelTextBlock}"
+                                        FontWeight="Bold"
+                                        ToolTip="Optional&#xA;Specifies the preview image, as a filename, for the preview image that will appear in the New Project / Add New Item dialog" />
+                                <TextBox Grid.Column="1" Grid.Row="9" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}PreviewImage"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}PreviewImage].Value}" />
+
+                                <!--ProjectType-->
+                                <TextBlock Text="ProjectType:" Grid.Column="0" Grid.Row="10" Style="{StaticResource LabelTextBlock}"
+                                        FontWeight="Bold"
+                                        ToolTip="Required element.&#xA;Specifies the Project Type, as a string, of the template.  This is usually: CSharp, VisualBasic or Web. If you will include AppliesTo element, then ProjectType is optional." />
+                                <ComboBox Grid.Column="1" Grid.Row="10" Style="{StaticResource StdComboBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}ProjectType"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}ProjectType].Value}">
+                                    <sys:String>CSharp</sys:String>
+                                    <sys:String>VisualBasic</sys:String>
+                                    <sys:String>Web</sys:String>
+                                </ComboBox>
+
+                                <!--SubProjectType-->
+                                <TextBlock Text="SubProjectType:" Grid.Column="0" Grid.Row="11" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Classifies the project template so that it appears under the specified subcategory in the 'New Project' dialog box.&#xA;Specifies the Project Subtype (if any), as a string, of the template. This value specifies the aggregate project system for an Item Template.&#xA;Possible values include: SmartDevice-NETCFv1, SmartDevice-NETCFv2. For Web projects, possible ProjectSubTypes include: CSharp and VisualBasic." />
+
+                                <ComboBox Grid.Column="1" Grid.Row="11" Style="{StaticResource StdComboBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}SubProjectType"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}SubProjectType].Value}">
+                                    <sys:String>SmartDevice-NETCFv1</sys:String>
+                                    <sys:String>SmartDevice-NETCFv2</sys:String>
+                                    <sys:String>CSharp</sys:String>
+                                    <sys:String>VisualBasic</sys:String>
+                                </ComboBox>
+                                <!--TemplateID-->
+                                <TextBlock Text="TemplateID:" Grid.Column="0" Grid.Row="12" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies an optional unique identifier, as a string, for the template.  If none is specified, the Name will be used as the template identifier." />
+                                <TextBox Grid.Column="1" Grid.Row="12" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}TemplateID"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}TemplateID].Value}" />
+                                <!--TemplateGroupID-->
+                                <TextBlock Text="TemplateGroupID:" Grid.Column="0" Grid.Row="13" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies an optional group identifier, as a string, for the template. Some kinds of projects require this for the item template to appear in the Add New Item dialog." />
+                                <TextBox Grid.Column="1" Grid.Row="13" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}TemplateGroupID"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}TemplateGroupID].Value}" />
+                                <!--AppliesTo-->
+                                <TextBlock Text="AppliesTo:" Grid.Column="0" Grid.Row="14" Style="{StaticResource LabelTextBlock}">
+                                    <TextBlock.ToolTip>
+                                        <Span>
+                                            Optional element.&#xA;Specifies an optional expression to match one or more capabilites see
+                                            <LineBreak />
+                                            <Hyperlink>http://msdn.microsoft.com/en-us/library/vstudio/microsoft.visualstudio.shell.interop.ivsbooleansymbolexpressionevaluator.evaluateexpression.aspx</Hyperlink> .
+                                            <LineBreak />
+                                            Capabilities are exposed by project types via the hierarchy as a property VSHPROPID_ProjectCapabilities.
+                                            <LineBreak />
+                                            This enables the template to be shared by multiple project types which have common applicable capabilities.
+                                        </Span>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                                <TextBox Grid.Column="1" Grid.Row="14" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}AppliesTo"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}AppliesTo].Value}" />
+                                <!--SortOrder-->
+                                <TextBlock Text="SortOrder:" Grid.Column="0" Grid.Row="15" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies a value that is used to arrange the template, among other templates in the same category, as it appears in either the New Project or Add New Item dialog box." />
+                                <TextBox Grid.Column="1" Grid.Row="15" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}SortOrder"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}SortOrder].Value, StringFormat=#}" />
+                                <!--CreateNewFolder-->
+                                <TextBlock Text="CreateNewFolder:" Grid.Column="0" Grid.Row="16" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies if a new folder should be created for the project. Default false." />
+                                <CheckBox Grid.Column="1" Grid.Row="16" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}CreateNewFolder"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}CreateNewFolder].Value,Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--DefaultName-->
+                                <TextBlock Text="DefaultName:" Grid.Column="0" Grid.Row="17" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies the name that the Visual Studio project system will generate for the project or item when it is created." />
+                                <TextBox Grid.Column="1" Grid.Row="17" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}DefaultName"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}DefaultName].Value}" />
+                                <!--ProvideDefaultName-->
+                                <TextBlock Text="ProvideDefaultName:" Grid.Column="0" Grid.Row="18" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies whether the Visual Studio project system will generate the default name for a project or item when it is created." />
+                                <CheckBox Grid.Column="1" Grid.Row="18" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}ProvideDefaultName"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}ProvideDefaultName].Value,Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--PromptForSaveOnCreation-->
+                                <TextBlock Text="PromptForSaveOnCreation:" Grid.Column="0" Grid.Row="19"
+                                        Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies if the project should be saved upon creation. Not all project types support this and this value may be ignored for those." />
+                                <CheckBox Grid.Column="1" Grid.Row="19" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}PromptForSaveOnCreation"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}PromptForSaveOnCreation].Value,Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--EnableLocationBrowseButton-->
+                                <TextBlock Text="EnableLocationBrowseButton:" Grid.Column="0" Grid.Row="20"
+                                        Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies whether the Browse button is available in the New Project dialog box, so that users can easily modify the default directory where a new project is saved." />
+                                <CheckBox Grid.Column="1" Grid.Row="20" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}EnableLocationBrowseButton"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}EnableLocationBrowseButton].Value,Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--Hidden-->
+                                <TextBlock Text="Hidden:" Grid.Column="0" Grid.Row="21" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies whether the template appears in either the New Project or Add New Item dialog box.
+                                       &#xA;If specified, no other elements inside the TemplateData are required. No errors will be logged if the template is malformed or otherwise in error" />
+                                <CheckBox Grid.Column="1" Grid.Row="21" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}Hidden"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}Hidden].Value, Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--NumberOfParentCategoriesToRollUp-->
+                                <TextBlock Text="NumberOfParentCategoriesToRollUp:" Grid.Column="0" Grid.Row="22"
+                                        Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies the number of parent categories that will display the template in the New Project dialog box.
+                                       &#xA;This tag is only used for internally (VS or VSIP) produced templates. Ignored for user templates" />
+                                <TextBox Grid.Column="1" Grid.Row="22" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}NumberOfParentCategoriesToRollUp"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}NumberOfParentCategoriesToRollUp].Value}" />
+                                <!--LocationFieldMRUPrefix-->
+                                <TextBlock Text="LocationFieldMRUPrefix:" Grid.Column="0" Grid.Row="23"
+                                        Style="{StaticResource LabelTextBlock}" ToolTip="Optional element.&#xA;Specifies the Most Recently Used paths in the New Project / New Item dialog.
+                                       This tag is should only be used for internally (VS or VSIP) produced templates." />
+                                <TextBox Grid.Column="1" Grid.Row="23" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}LocationFieldMRUPrefix"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}LocationFieldMRUPrefix].Value}" />
+                                <!--LocationField-->
+                                <TextBlock Text="LocationField:" Grid.Column="0" Grid.Row="24" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies whether or not the Location text box in the New Project dialog box is either enabled, disabled, or hidden for the project template." />
+                                <ComboBox Grid.Column="1" Grid.Row="24" Style="{StaticResource StdComboBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}LocationField"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}LocationField].Value}">
+                                    <sys:String>Enabled</sys:String>
+                                    <sys:String>Disabled</sys:String>
+                                    <sys:String>Hidden</sys:String>
+                                </ComboBox>
+                                <!--CreateInPlace-->
+                                <TextBlock Text="CreateInPlace:" Grid.Column="0" Grid.Row="25" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Create project files directly at the target location." />
+                                <CheckBox Grid.Column="1" Grid.Row="25" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}CreateInPlace"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}CreateInPlace].Value, Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--BuildOnLoad-->
+                                <TextBlock Text="BuildOnLoad:" Grid.Column="0" Grid.Row="26" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Builds solution immediately after creation" />
+                                <CheckBox Grid.Column="1" Grid.Row="26" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}BuildOnLoad"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}BuildOnLoad].Value, Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--BuildProjectOnLoad-->
+                                <TextBlock Text="BuildProjectOnLoad:" Grid.Column="0" Grid.Row="27" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Builds the newly added project only immediately after creation" />
+                                <CheckBox Grid.Column="1" Grid.Row="27" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}BuildProjectOnLoad"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}BuildProjectOnLoad].Value, Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+
+                                <!--ShowByDefault-->
+                                <TextBlock Text="ShowByDefault:" Grid.Column="0" Grid.Row="28" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;If set to false will only display the template under the specified TemplateGroupID. Default or unspecified is true." />
+                                <CheckBox Grid.Column="1" Grid.Row="28" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}ShowByDefault"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}ShowByDefault].Value, Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+
+                                <!--AppendDefaultFileExtension-->
+                                <TextBlock Text="AppendDefaultFileExtension:" Grid.Column="0" Grid.Row="29"
+                                        Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies whether the template should append the default file extension." />
+                                <CheckBox Grid.Column="1" Grid.Row="29" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}AppendDefaultFileExtension"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}AppendDefaultFileExtension].Value, Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+
+                                <!--FrameworkVersion-->
+                                <TextBlock Text="FrameworkVersion:" Grid.Column="0" Grid.Row="30" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Deprecated. Use RequiredFrameworkVersion instead" />
+                                <TextBox Grid.Column="1" Grid.Row="30" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}FrameworkVersion"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}FrameworkVersion].Value}" />
+
+                                <!--RequiredFrameworkVersion-->
+                                <TextBlock Text="RequiredFrameworkVersion:" Grid.Column="0" Grid.Row="31"
+                                        Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Use this element if the template only supports a specific minimum version, and later versions if any, of the .NET Framework." />
+                                <ComboBox Grid.Column="1" Grid.Row="31" Style="{StaticResource StdComboBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}RequiredFrameworkVersion"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}RequiredFrameworkVersion].Value}">
+                                    <sys:String>2.0</sys:String>
+                                    <sys:String>3.0</sys:String>
+                                    <sys:String>3.5</sys:String>
+                                    <sys:String>4.0</sys:String>
+                                    <sys:String>4.5</sys:String>
+                                    <sys:String>4.5.1</sys:String>
+                                    <sys:String>4.5.2</sys:String>
+                                    <sys:String>4.6</sys:String>
+                                    <sys:String>4.6.1</sys:String>
+                                    <sys:String>4.6.2</sys:String>
+                                    <sys:String>4.7</sys:String>
+                                    <sys:String>4.7.1</sys:String>
+                                    <sys:String>4.7.2</sys:String>
+                                </ComboBox>
+
+                                <!--MaxFrameworkVersion-->
+                                <TextBlock Text="MaxFrameworkVersion:" Grid.Column="0" Grid.Row="32" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Use this element if the template only supports a specific maximum version of the .NET Framework." />
+
+                                <ComboBox Grid.Column="1" Grid.Row="32" Style="{StaticResource StdComboBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}MaxFrameworkVersion"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}MaxFrameworkVersion].Value}">
+                                    <sys:String>2.0</sys:String>
+                                    <sys:String>3.0</sys:String>
+                                    <sys:String>3.5</sys:String>
+                                    <sys:String>4.0</sys:String>
+                                    <sys:String>4.5</sys:String>
+                                    <sys:String>4.5.1</sys:String>
+                                    <sys:String>4.5.2</sys:String>
+                                    <sys:String>4.6</sys:String>
+                                    <sys:String>4.6.1</sys:String>
+                                    <sys:String>4.6.2</sys:String>
+                                    <sys:String>4.7</sys:String>
+                                    <sys:String>4.7.1</sys:String>
+                                    <sys:String>4.7.2</sys:String>
+                                </ComboBox>
+
+                                <!--SupportsMasterPage-->
+                                <TextBlock Text="SupportsMasterPage:" Grid.Column="0" Grid.Row="33" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies whether the template supports a master page for web projects." />
+                                <CheckBox Grid.Column="1" Grid.Row="33" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}SupportsMasterPage"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}SupportsMasterPage].Value, Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--SupportsCodeSeparation-->
+                                <TextBlock Text="SupportsCodeSeparation:" Grid.Column="0" Grid.Row="34"
+                                        Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies whether the template supports code separation, or the code-behind page model, for web projects." />
+                                <CheckBox Grid.Column="1" Grid.Row="34" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}SupportsCodeSeparation"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}SupportsCodeSeparation].Value, Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--SupportsLanguageDropDown-->
+                                <TextBlock Text="SupportsLanguageDropDown:" Grid.Column="0" Grid.Row="35"
+                                        Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies whether the template is identical for multiple languages, and whether the Language option is available from the New Project dialog box." />
+                                <CheckBox Grid.Column="1" Grid.Row="35" Style="{StaticResource StdCheckBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}SupportsLanguageDropDown"
+                                        IsChecked="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}SupportsLanguageDropDown].Value, Converter={local:BoolToStringConverter}, FallbackValue={x:Null}}" />
+                                <!--TargetPlatformName-->
+                                <TextBlock Text="TargetPlatformName:" Grid.Column="0" Grid.Row="36" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies the platform that the project template targets. This element specifies that a project template is used to create Windows 8.x Store apps." />
+                                <TextBox Grid.Column="1" Grid.Row="36" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}TargetPlatformName"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}TargetPlatformName].Value}" />
+
+                                <!--RequiredPlatformVersion-->
+                                <TextBlock Text="RequiredPlatformVersion:" Grid.Column="0" Grid.Row="37"
+                                        Style="{StaticResource LabelTextBlock}" ToolTip="Optional element.&#xA;" />
+                                <TextBox Grid.Column="1" Grid.Row="37" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}RequiredPlatformVersion"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}RequiredPlatformVersion].Value}" />
+
+                                <!--MaxOSVersion-->
+                                <TextBlock Text="MaxOSVersion:" Grid.Column="0" Grid.Row="38" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Maximum supported OS version - Expected to be a Windows version e.g. '6.2.9200' for Windows 8" />
+                                <TextBox Grid.Column="1" Grid.Row="38" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}MaxOSVersion"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}MaxOSVersion].Value}" />
+
+                                <!--SpecialTemplateType-->
+                                <TextBlock Text="SpecialTemplateType:" Grid.Column="0" Grid.Row="39" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Special project template type: EmptyShared (for empty shared project), EmptyNode (for empty head node for one app)" />
+                                <ComboBox Grid.Column="1" Grid.Row="39" Style="{StaticResource StdComboBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}SpecialTemplateType"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}SpecialTemplateType].Value}">
+                                    <sys:String>EmptyShared</sys:String>
+                                    <sys:String>EmptyNode</sys:String>
+                                </ComboBox>
+
+                                <!--CustomDataSignature-->
+                                <TextBlock Text="CustomDataSignature:" Grid.Column="0" Grid.Row="40" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies the text signature to locate the customdata" />
+                                <TextBox Grid.Column="1" Grid.Row="40" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}CustomDataSignature"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}CustomDataSignature].Value}" />
+
+                                <!--AppIdFilter-->
+                                <TextBlock Text="AppIdFilter:" Grid.Column="0" Grid.Row="41" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element.&#xA;Specifies template availability based on AppId. Syntax: '[-|!]appid1{;[-|!]appid2}' (where '-' and '!' can be used for negation). E.g. 'blend'" />
+                                <TextBox Grid.Column="1" Grid.Row="41" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXElementIfNotExistsRemoveEmpty="{}{http://schemas.microsoft.com/developer/vstemplate/2005}AppIdFilter"
+                                        Text="{Binding Element[{http://schemas.microsoft.com/developer/vstemplate/2005}AppIdFilter].Value}" />
+                            </Grid>
+                        </DataTemplate>
+                        <!--ProjectItem-->
+                        <DataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}TemplateContent">
+
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}WizardExtension">
+
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{}{http://schemas.microsoft.com/developer/vstemplate/2005}WizardData">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <!--Name-->
+                                <TextBlock Text="Name:" Grid.Column="0" Grid.Row="0" Style="{StaticResource LabelTextBlock}"
+                                        ToolTip="Optional element. Default valu $WizardData$" />
+                                <TextBox Grid.Column="1" Grid.Row="0" Style="{StaticResource StdTextBox}"
+                                        local:TextChangedAction.AddXAttributeIfNotExists="Name" Text="{Binding Attribute[Name].Value}" />
+                                <!--Value XML-->
+                                <TextBlock Grid.Column="0" Grid.Row="1" Text="Data (Xml):" Style="{StaticResource LabelTextBlock}"
+                                        VerticalAlignment="Top" Margin="3" ToolTip="XML form wizard data" />
+                                <TextBox Grid.Column="1" Grid.Row="1" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto"
+                                        HorizontalScrollBarVisibility="Auto" VerticalContentAlignment="Stretch" AcceptsReturn="True"
+                                        AcceptsTab="True" LostFocus="TextBox_LostFocus" Loaded="TextBox_Loaded" />
+
+                            </Grid>
+                        </DataTemplate>
+
+                    </ContentControl.Resources>
+
+                </ContentControl>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>
 
     
+   

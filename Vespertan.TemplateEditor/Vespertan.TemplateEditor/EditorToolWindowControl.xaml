@@ -80,6 +80,11 @@
                     <TreeView x:Name="tv" Grid.Column="0" ItemsSource="{Binding TemplateNodeItemList}"
                             local:ReadOnlyPropertyBinding.ReadOnlyProperty="{Binding ElementName=tv, Path=SelectedValue}"
                             local:ReadOnlyPropertyBinding.ModelProperty="{Binding TemplateNodeItemCurrent}">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="True" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
                         <TreeView.InputBindings>
                             <KeyBinding Key="F2" Command="{Binding TemplateNodeItemRenameBeginCommand}"
                                     CommandParameter="{Binding TemplateNodeItemCurrent}" />
