@@ -279,8 +279,9 @@ namespace Vespertan.TemplateEditor
 
             var currentProcess = Process.GetCurrentProcess();
 
-            var proc = Process.Start(new ProcessStartInfo(currentProcess.MainModule.FileName, "/installvstemplates"));
-            var vsMajorVersion = proc.MainModule.FileVersionInfo.FileMajorPart.ToString();
+            var proc = new Process();
+            proc.StartInfo = new ProcessStartInfo(currentProcess.MainModule.FileName, "/installvstemplates");
+            var vsMajorVersion = currentProcess.MainModule.FileVersionInfo.FileMajorPart.ToString();
             proc.Start();
             var executed = proc.WaitForExit(10000);
             if (!executed)
@@ -291,43 +292,44 @@ namespace Vespertan.TemplateEditor
 
             var vsAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Microsoft\VisualStudio";
             var dirs = Directory.GetDirectories(vsAppDataDir, $"{vsMajorVersion}*", SearchOption.TopDirectoryOnly);
-            string vsCacheDir = null;
+            List<string> vsCacheDir = new List<string>();
             foreach (var d in dirs)
             {
-                if (Regex.IsMatch(d, vsMajorVersion + @"[.]\d_[a-zA-Z0-9]{8}$"))
+                if (Regex.IsMatch(d, vsMajorVersion + @"[.]\d_[a-zA-Z0-9]{8}(Exp)?$"))
                 {
-                    vsCacheDir = d;
-                    break;
+                    vsCacheDir.Add(d);
                 }
             }
 
-            if (vsCacheDir == null)
+            if (vsCacheDir.Count == 0)
             {
                 MessageBox.Show("Template installed.\nCache not found.");
                 return;
             }
 
-            var vsCacheTemplateDir = $"{vsCacheDir}\\ItemTemplatesCache\\{TemplateNodeItemRoot.Name}";
-            if (!Directory.Exists(vsCacheTemplateDir))
+            foreach (var dir in dirs)
             {
-                MessageBox.Show("Template installed.\nCache not found.");
-                return;
+                var vsCacheTemplateDir = $"{dir}\\ItemTemplatesCache\\{TemplateNodeItemRoot.Name}";
+                if (!Directory.Exists(vsCacheTemplateDir))
+                {
+                    MessageBox.Show("Template installed.\nCache not found.");
+                    continue;
+                }
+
+                try
+                {
+                    Directory.Delete(vsCacheTemplateDir, true);
+                }
+                catch
+                {
+                    MessageBox.Show("Template installed.\nCache not updated (in use). Please restart Visual Studio to changes make effect.");
+                    continue;
+                }
+
+                Copy(TemplateTempDir, vsCacheTemplateDir);
+
+                MessageBox.Show("Template installed.\nCache updated");
             }
-
-            try
-            {
-                Directory.Delete(vsCacheTemplateDir, true);
-            }
-            catch
-            {
-                MessageBox.Show("Template installed.\nCache not updated (in use). Please restart Visual Studio to changes make effect.");
-                return;
-            }
-
-            Copy(TemplateTempDir, vsCacheTemplateDir);
-
-            MessageBox.Show("Template installed.\nCache updated");
-
         }
 
         private bool CanTemplateInstall()
@@ -852,7 +854,14 @@ namespace Vespertan.TemplateEditor
 
             try
             {
-                DTE.SelectedItems.Item(1).ProjectItem.ProjectItems.AddFromTemplate(projectItemTemplate, "Kiszka.cs");
+                if (DTE.SelectedItems.Item(1).ProjectItem != null)
+                {
+                    DTE.SelectedItems.Item(1).ProjectItem.ProjectItems.AddFromTemplate(projectItemTemplate, "Kiszka.cs");
+                }
+                else
+                {
+                    DTE.SelectedItems.Item(1).Project.ProjectItems.AddFromTemplate(projectItemTemplate, "Kiszka.cs");
+                }
 
                 var lst = new ObservableCollection<NameValue>();
                 var eList = WizardInfoWrapper.EvaluatedReplacementDictionary ?? new Dictionary<string, string>();
@@ -939,7 +948,7 @@ namespace Vespertan.TemplateEditor
             if (XElementCurrent.Element(param) == null)
             {
                 XElementCurrent.Add(new XElement(param));
-                
+
             }
         }
 
